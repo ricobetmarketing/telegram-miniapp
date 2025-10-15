@@ -9,8 +9,10 @@ import { verifyInitData, extractUser } from "./auth.js";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: process.env.CORS_ORIGIN?.split(",") || "*"}));
-
+app.use(cors({
+  origin: process.env.CORS_ORIGIN?.split(",") || "*",
+  allowedHeaders: ["Content-Type", "X-Telegram-InitData"],
+}));
 // --- Telegram bot (reply with WebApp button) ---
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
