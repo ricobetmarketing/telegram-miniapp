@@ -4,7 +4,7 @@ if (tg) {
   tg.MainButton.hide();
 }
 
-const API = "https://YOUR_SERVER_URL"; // <== change to your server
+const API = "https://telegram-miniapp-tb5r.onrender.com"; // <== change to your server
 
 // --- UI refs
 const pointsEl = document.getElementById("points");
