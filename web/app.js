@@ -52,12 +52,15 @@ function startTimer(){
 }
 
 // --- API helper with initData header
-async function callApi(path, body={}){
-  const initData = tg?.initData || ""; // Telegram passes it to webapp
+async function callApi(path, body = {}) {
+  const initData = window.Telegram?.WebApp?.initData || "";
   const res = await fetch(`${API}${path}`, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json", "X-Telegram-InitData": initData },
-    body: JSON.stringify({ ...body })
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Telegram-InitData": initData // keep header
+    },
+    body: JSON.stringify({ ...body, initData }) // <-- add it in body too
   });
   return res.json();
 }
