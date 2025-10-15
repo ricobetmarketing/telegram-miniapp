@@ -16,7 +16,7 @@ const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
 bot.onText(/\/start/i, (msg) => {
   const chatId = msg.chat.id;
-  const webAppUrl = "https://YOUR_FRONTEND_URL/index.html"; // <== change this
+  const webAppUrl = "https://telegram-miniapp-black.vercel.app"; // <== change this
   const keyboard = {
     keyboard: [[{ text: "🎮 Play Game", web_app: { url: webAppUrl } }]],
     resize_keyboard: true,
