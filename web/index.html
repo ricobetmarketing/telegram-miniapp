@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Rico.bet Mini — Lucky Drop</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">
+      <img src="https://i.imgur.com/FQyKk2E.png" alt="icon">
+      <div>
+        <div style="font-weight:800;letter-spacing:.4px">Rico.bet</div>
+        <div class="kbd">Lucky Drop</div>
+      </div>
+    </div>
+
+    <div class="card" id="scoreCard">
+      <div class="row" style="align-items:center">
+        <div style="flex:1">
+          <div>Your total points</div>
+          <div class="big" id="points">0</div>
+          <div>🎯 Balls available: <b id="balls">0</b>/60</div>
+          <div class="note">Next 10 balls in <span class="timer" id="timer">—:—</span></div>
+        </div>
+        <button class="btn" id="btnRecords" style="max-width:220px">My Records</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div id="plinko" class="grid"></div>
+      <div class="bins" id="bins"></div>
+      <div class="note">Tap anywhere to drop a ball</div>
+      <button class="btn" id="btnDrop">Play Game</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
