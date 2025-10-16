@@ -3,40 +3,333 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Rico.bet Mini — Lucky Drop</title>
-<link rel="stylesheet" href="style.css">
+<title>Rico.bet — Lucky Drop</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --ink:#eaf2ff; --muted:#a9b7d8;
+    --bg:#0b0e16; --panel:#11131b; --panel2:#171a24;
+    --g1:#ff6ec4; --g2:#7873f5;
+    --chip:#2a2440; --chipHi:#5a3cff;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink); font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+    background:
+      radial-gradient(1200px 600px at 50% 18%, rgba(120,115,245,.25), transparent 60%),
+      radial-gradient(1000px 500px at 30% 88%, rgba(255,110,196,.2), transparent 55%),
+      var(--bg);
+  }
+  .container{max-width:980px;margin:0 auto;padding:16px}
+  .card{
+    background:linear-gradient(180deg, var(--panel), var(--panel2));
+    border-radius:22px; padding:20px;
+    box-shadow:0 12px 36px rgba(0,0,0,.35);
+  }
+  .brand{display:flex;align-items:center;gap:12px;margin:6px 0 16px}
+  .brand img{width:42px;height:42px;border-radius:8px}
+  .brand .t1{font-weight:900;letter-spacing:.4px}
+  .brand .t2{opacity:.8}
+
+  .big{font-size: clamp(44px, 8.2vw, 72px); font-weight:900; letter-spacing:2px; margin:2px 0 8px}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .pill{
+    padding:10px 14px;border-radius:14px;background:#202331;display:inline-flex;gap:10px;align-items:center
+  }
+  .pill b{font-size:16px}
+  .btn{
+    background:linear-gradient(90deg,var(--g1),var(--g2));
+    color:#111; border:0; border-radius:16px; padding:14px 18px; font-weight:900;
+    cursor:pointer; font-size:16px; transition:transform .05s ease;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  /* Views */
+  .view{display:none}
+  .view.active{display:block}
+
+  /* Game page header bar (like your 3rd image) */
+  .game-hud{
+    margin:10px auto 16px; width:fit-content;
+    background:#222736; border-radius:18px; padding:10px 16px; display:flex; gap:18px; align-items:center;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+  }
+  .hud-item{display:flex;gap:8px;align-items:center}
+  .hud-item .num{font-weight:800}
+
+  /* Plinko board */
+  .board-wrap{background:linear-gradient(180deg, var(--panel), var(--panel2)); border-radius:22px; padding:16px}
+  .board{
+    position:relative; width:100%; aspect-ratio: 1 / 1; /* keeps it square and mobile-friendly */
+    border-radius:16px; overflow:hidden; background:#121522;
+  }
+  /* Triangle layout: we’ll place dots by JS */
+  .dot{position:absolute; width:8px; height:8px; border-radius:50%; background:#fff; opacity:.9}
+  .ball{
+    position:absolute; width:14px; height:14px; border-radius:50%;
+    background:#ff546c; box-shadow:0 0 14px rgba(255,84,108,.65);
+    transform:translate(-50%,-50%); will-change:transform;
+  }
+  .bins{display:flex; gap:8px; justify-content:center; flex-wrap:nowrap; margin:12px 0 0}
+  .bin{
+    padding:8px 10px; border-radius:10px; background:#2a2440; font-weight:800; font-size:14px; min-width:42px; text-align:center;
+  }
+  .bin.active{outline:2px solid #ff9ed7}
+  .note{opacity:.8;text-align:center;margin:10px 0}
+
+  .foot-actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:12px}
+
+  /* Bin gradient like sample (ends highlighted) */
+  .bin:nth-child(1),
+  .bin:last-child{background:linear-gradient(90deg,#5139ff,#7d40ff)}
+  .bin:nth-child(2),
+  .bin:nth-last-child(2){background:#5030ff}
+  .bin:nth-child(3),
+  .bin:nth-last-child(3){background:#a24fff}
+  .bin:nth-child(6){background:#ff79a7}
+
+  /* Small screens */
+  @media (max-width:480px){
+    .game-hud{gap:12px; padding:8px 12px}
+    .bin{font-size:12px; min-width:38px}
+  }
+</style>
 </head>
 <body>
   <div class="container">
+    <!-- BRAND -->
     <div class="brand">
       <img src="https://i.imgur.com/FQyKk2E.png" alt="icon">
       <div>
-        <div style="font-weight:800;letter-spacing:.4px">Rico.bet</div>
-        <div class="kbd">Lucky Drop</div>
+        <div class="t1">Rico.bet</div>
+        <div class="t2">Lucky Drop</div>
       </div>
     </div>
 
-    <div class="card" id="scoreCard">
-      <div class="row" style="align-items:center">
-        <div style="flex:1">
-          <div>Your total points</div>
-          <div class="big" id="points">0</div>
-          <div>🎯 Balls available: <b id="balls">0</b>/60</div>
-          <div class="note">Next 10 balls in <span class="timer" id="timer">—:—</span></div>
+    <!-- ===== HOME VIEW ===== -->
+    <section id="view-home" class="view active">
+      <div class="card">
+        <div class="row">
+          <div style="flex:1;min-width:260px">
+            <div>Your total points</div>
+            <div class="big" id="h_points">0</div>
+            <div class="pill">🎯 Balls available: <b id="h_balls" style="margin-left:8px">0</b>/60</div>
+            <div class="pill" style="margin-left:8px">⏳ Next 10 balls in <b id="h_timer" style="margin-left:8px">—:—</b></div>
+          </div>
+          <div style="min-width:220px">
+            <button class="btn" id="btnGoGame" style="width:100%;height:56px">Play Game</button>
+            <div class="foot-actions" style="margin-top:10px">
+              <button class="btn" id="btnRecordsHome">My Records</button>
+            </div>
+          </div>
         </div>
-        <button class="btn" id="btnRecords" style="max-width:220px">My Records</button>
       </div>
-    </div>
+    </section>
 
-    <div class="card" style="margin-top:14px">
-      <div id="plinko" class="grid"></div>
-      <div class="bins" id="bins"></div>
-      <div class="note">Tap anywhere to drop a ball</div>
-      <button class="btn" id="btnDrop">Play Game</button>
-    </div>
+    <!-- ===== GAME VIEW ===== -->
+    <section id="view-game" class="view">
+      <!-- HUD like your screenshot -->
+      <div class="game-hud">
+        <div class="hud-item">✨ <span class="num" id="g_points">0</span></div>
+        <div class="hud-item">🔴 <span class="num" id="g_balls">0/60</span></div>
+      </div>
+
+      <div class="board-wrap">
+        <div id="board" class="board"></div>
+        <div id="bins" class="bins"></div>
+        <div class="note">Tap the screen to drop a ball</div>
+        <div class="foot-actions">
+          <button class="btn" id="btnDrop">Drop</button>
+          <button class="btn" id="btnBack">Back</button>
+          <button class="btn" id="btnRecords">My Records</button>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top:10px">⏳ Next 10 balls in <b id="g_timer" class="num">—:—</b></div>
+    </section>
   </div>
 
-  <script src="app.js"></script>
+<script>
+/* =======================
+   CONFIG — EDIT THIS LINE
+   ======================= */
+const API_URL = "https://telegram-miniapp-tb5r.onrender.com"; // ← your Render URL
+
+// Telegram WebApp helpers
+const tg = window.Telegram?.WebApp; tg?.expand(); tg?.MainButton?.hide();
+
+// Elements
+const viewHome   = document.getElementById('view-home');
+const viewGame   = document.getElementById('view-game');
+const btnGoGame  = document.getElementById('btnGoGame');
+const btnBack    = document.getElementById('btnBack');
+const btnDrop    = document.getElementById('btnDrop');
+const btnRecHome = document.getElementById('btnRecordsHome');
+const btnRec     = document.getElementById('btnRecords');
+
+const h_points = document.getElementById('h_points');
+const h_balls  = document.getElementById('h_balls');
+const h_timer  = document.getElementById('h_timer');
+
+const g_points = document.getElementById('g_points');
+const g_balls  = document.getElementById('g_balls');
+const g_timer  = document.getElementById('g_timer');
+
+const board = document.getElementById('board');
+const binsWrap = document.getElementById('bins');
+
+// App state
+let nextLeft = 0, timerInt = null;
+
+// API helper (send initData in header + body)
+async function callApi(path, body = {}){
+  const initData = tg?.initData || "";
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Telegram-InitData": initData
+    },
+    body: JSON.stringify({ ...body, initData })
+  });
+  try { return await res.json(); } catch {
+    return { ok:false, error:"BAD_JSON_RESPONSE" };
+  }
+}
+
+// Timer
+function startTimer(){
+  if (timerInt) clearInterval(timerInt);
+  const tick = ()=>{
+    const m = Math.floor(nextLeft/60), s = nextLeft%60;
+    const val = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    h_timer.textContent = val; g_timer.textContent = val;
+    if (nextLeft>0) nextLeft--; else clearInterval(timerInt);
+  };
+  tick();
+  timerInt = setInterval(tick,1000);
+}
+
+// Update counters everywhere
+function setStats({ points, balls, nextRefillIn }){
+  h_points.textContent = points;
+  h_balls.textContent  = balls;
+  g_points.textContent = points;
+  g_balls.textContent  = `${balls}/60`;
+  if (typeof nextRefillIn === 'number') { nextLeft = nextRefillIn; startTimer(); }
+  btnDrop.disabled = balls <= 0;
+}
+
+// ===================
+// Build triangle grid
+// ===================
+const ROWS = 11;                 // number of rows in triangle (like your sample)
+const DOT = 8;                   // dot size (px)
+const SPACING = 28;              // distance between dots (px)
+const TOP_MARGIN = 30;
+
+function buildTriangle(){
+  board.innerHTML = "";
+  const width = board.clientWidth;
+  const totalW = (ROWS - 1) * SPACING;
+  const offsetX = (width - totalW) / 2;
+
+  for (let r = 0; r < ROWS; r++){
+    const cols = r + 1;                           // triangle grows by 1 each row
+    const startX = offsetX + (totalW - (r*SPACING)) / 2; // center
+    for (let c = 0; c < cols; c++){
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      const x = startX + c * SPACING;
+      const y = TOP_MARGIN + r * SPACING;
+      dot.style.transform = `translate(${x}px, ${y}px)`;
+      board.appendChild(dot);
+    }
+  }
+}
+buildTriangle();
+window.addEventListener('resize', buildTriangle);
+
+// Bins (match screenshot numbers & highlight ends)
+const BIN_VALUES = [100,75,50,35,20,10,20,35,50,75,100];
+function buildBins(){
+  binsWrap.innerHTML = "";
+  BIN_VALUES.forEach(v=>{
+    const el = document.createElement('div');
+    el.className = 'bin';
+    el.textContent = v;
+    binsWrap.appendChild(el);
+  });
+}
+buildBins();
+
+// ===================
+// Bootstrap
+// ===================
+(async ()=>{
+  const r = await callApi("/api/bootstrap");
+  if (!r.ok) return alert(r.error || "Auth failed.");
+  setStats(r);
+})();
+
+// View switching
+function show(view){
+  [viewHome, viewGame].forEach(v=>v.classList.remove('active'));
+  view.classList.add('active');
+}
+btnGoGame.addEventListener('click', ()=>show(viewGame));
+btnBack.addEventListener('click', ()=>show(viewHome));
+
+// Records
+async function showRecords(){
+  const r = await callApi("/api/records");
+  if (!r.ok) return alert(r.error||"Error");
+  alert(`Points: ${r.points}\nBalls: ${r.balls}`);
+}
+btnRec.addEventListener('click', showRecords);
+btnRecHome.addEventListener('click', showRecords);
+
+// ===================
+// Drop animation + API
+// ===================
+async function drop(){
+  btnDrop.disabled = true;
+
+  const ball = document.createElement('div');
+  ball.className = 'ball'; board.appendChild(ball);
+
+  // Simple gravity animation
+  let x = board.clientWidth/2, y = 0, vy = 2, vx = (Math.random()-.5)*2;
+  const loop = ()=>{
+    vy += .25; y += vy; x += vx;
+    if (x < 10 || x > board.clientWidth-10) vx *= -1;
+    ball.style.transform = `translate(${x}px, ${y}px)`;
+    if (y < board.clientHeight-40) requestAnimationFrame(loop);
+  };
+  loop();
+
+  // Ask server to resolve prize & counts
+  const res = await callApi("/api/drop");
+  if (!res.ok){
+    ball.remove();
+    btnDrop.disabled = false;
+    if (res.error === "NO_BALLS"){ alert("Out of balls. Please wait for refill."); }
+    else { alert(res.error || "Drop failed"); }
+    return;
+  }
+
+  // Highlight bin
+  binsWrap.querySelectorAll('.bin').forEach((b,i)=>b.classList.toggle('active', i===res.binIndex));
+
+  // Update stats
+  setStats({ points: res.points, balls: res.ballsLeft, nextRefillIn: res.nextRefillIn });
+
+  setTimeout(()=>{ ball.remove(); btnDrop.disabled = res.ballsLeft<=0; }, 900);
+}
+btnDrop.addEventListener('click', drop);
+board.addEventListener('click', drop);
+</script>
 </body>
 </html>
