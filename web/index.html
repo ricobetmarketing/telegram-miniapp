@@ -10,7 +10,6 @@
     --ink:#eaf2ff; --muted:#a9b7d8;
     --bg:#0b0e16; --panel:#11131b; --panel2:#171a24;
     --g1:#ff6ec4; --g2:#7873f5;
-    --chip:#2a2440; --chipHi:#5a3cff;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -22,11 +21,7 @@
       var(--bg);
   }
   .container{max-width:980px;margin:0 auto;padding:16px}
-  .card{
-    background:linear-gradient(180deg, var(--panel), var(--panel2));
-    border-radius:22px; padding:20px;
-    box-shadow:0 12px 36px rgba(0,0,0,.35);
-  }
+  .card{background:linear-gradient(180deg, var(--panel), var(--panel2)); border-radius:22px; padding:20px; box-shadow:0 12px 36px rgba(0,0,0,.35)}
   .brand{display:flex;align-items:center;gap:12px;margin:6px 0 16px}
   .brand img{width:42px;height:42px;border-radius:8px}
   .brand .t1{font-weight:900;letter-spacing:.4px}
@@ -34,23 +29,19 @@
 
   .big{font-size: clamp(44px, 8.2vw, 72px); font-weight:900; letter-spacing:2px; margin:2px 0 8px}
   .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-  .pill{
-    padding:10px 14px;border-radius:14px;background:#202331;display:inline-flex;gap:10px;align-items:center
-  }
+  .pill{padding:10px 14px;border-radius:14px;background:#202331;display:inline-flex;gap:10px;align-items:center}
   .pill b{font-size:16px}
   .btn{
     background:linear-gradient(90deg,var(--g1),var(--g2));
     color:#111; border:0; border-radius:16px; padding:14px 18px; font-weight:900;
     cursor:pointer; font-size:16px; transition:transform .05s ease;
   }
-  .btn:active{transform:translateY(1px)}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn:active{transform:translateY(1px)} .btn:disabled{opacity:.45;cursor:not-allowed}
 
   /* Views */
-  .view{display:none}
-  .view.active{display:block}
+  .view{display:none} .view.active{display:block}
 
-  /* Game page header bar (like your 3rd image) */
+  /* HUD like sample */
   .game-hud{
     margin:10px auto 16px; width:fit-content;
     background:#222736; border-radius:18px; padding:10px 16px; display:flex; gap:18px; align-items:center;
@@ -59,38 +50,24 @@
   .hud-item{display:flex;gap:8px;align-items:center}
   .hud-item .num{font-weight:800}
 
-  /* Plinko board */
+  /* Board */
   .board-wrap{background:linear-gradient(180deg, var(--panel), var(--panel2)); border-radius:22px; padding:16px}
-  .board{
-    position:relative; width:100%; aspect-ratio: 1 / 1; /* keeps it square and mobile-friendly */
-    border-radius:16px; overflow:hidden; background:#121522;
-  }
-  /* Triangle layout: we’ll place dots by JS */
+  .board{position:relative; width:100%; aspect-ratio: 1 / 1; border-radius:16px; overflow:hidden; background:#121522}
   .dot{position:absolute; width:8px; height:8px; border-radius:50%; background:#fff; opacity:.9}
-  .ball{
-    position:absolute; width:14px; height:14px; border-radius:50%;
-    background:#ff546c; box-shadow:0 0 14px rgba(255,84,108,.65);
-    transform:translate(-50%,-50%); will-change:transform;
-  }
+  .ball{position:absolute; width:14px; height:14px; border-radius:50%; background:#ff546c; box-shadow:0 0 14px rgba(255,84,108,.65); transform:translate(-50%,-50%); will-change:transform}
+
   .bins{display:flex; gap:8px; justify-content:center; flex-wrap:nowrap; margin:12px 0 0}
-  .bin{
-    padding:8px 10px; border-radius:10px; background:#2a2440; font-weight:800; font-size:14px; min-width:42px; text-align:center;
-  }
+  .bin{padding:8px 10px; border-radius:10px; background:#2a2440; font-weight:800; font-size:14px; min-width:42px; text-align:center}
   .bin.active{outline:2px solid #ff9ed7}
   .note{opacity:.8;text-align:center;margin:10px 0}
-
   .foot-actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:12px}
 
-  /* Bin gradient like sample (ends highlighted) */
-  .bin:nth-child(1),
-  .bin:last-child{background:linear-gradient(90deg,#5139ff,#7d40ff)}
-  .bin:nth-child(2),
-  .bin:nth-last-child(2){background:#5030ff}
-  .bin:nth-child(3),
-  .bin:nth-last-child(3){background:#a24fff}
+  /* Bin gradient (ends highlighted) */
+  .bin:first-child,.bin:last-child{background:linear-gradient(90deg,#5139ff,#7d40ff)}
+  .bin:nth-child(2),.bin:nth-last-child(2){background:#5030ff}
+  .bin:nth-child(3),.bin:nth-last-child(3){background:#a24fff}
   .bin:nth-child(6){background:#ff79a7}
 
-  /* Small screens */
   @media (max-width:480px){
     .game-hud{gap:12px; padding:8px 12px}
     .bin{font-size:12px; min-width:38px}
@@ -130,7 +107,6 @@
 
     <!-- ===== GAME VIEW ===== -->
     <section id="view-game" class="view">
-      <!-- HUD like your screenshot -->
       <div class="game-hud">
         <div class="hud-item">✨ <span class="num" id="g_points">0</span></div>
         <div class="hud-item">🔴 <span class="num" id="g_balls">0/60</span></div>
@@ -157,8 +133,9 @@
    ======================= */
 const API_URL = "https://telegram-miniapp-tb5r.onrender.com"; // ← your Render URL
 
-// Telegram WebApp helpers
+// Telegram WebApp
 const tg = window.Telegram?.WebApp; tg?.expand(); tg?.MainButton?.hide();
+if (!tg || !tg.initData) console.warn("Open from Telegram, not a normal browser tab.");
 
 // Elements
 const viewHome   = document.getElementById('view-home');
@@ -180,10 +157,9 @@ const g_timer  = document.getElementById('g_timer');
 const board = document.getElementById('board');
 const binsWrap = document.getElementById('bins');
 
-// App state
 let nextLeft = 0, timerInt = null;
 
-// API helper (send initData in header + body)
+// API helper (header + body carries initData)
 async function callApi(path, body = {}){
   const initData = tg?.initData || "";
   const res = await fetch(`${API_URL}${path}`, {
@@ -194,9 +170,7 @@ async function callApi(path, body = {}){
     },
     body: JSON.stringify({ ...body, initData })
   });
-  try { return await res.json(); } catch {
-    return { ok:false, error:"BAD_JSON_RESPONSE" };
-  }
+  try { return await res.json(); } catch { return { ok:false, error:"BAD_JSON_RESPONSE" }; }
 }
 
 // Timer
@@ -208,42 +182,38 @@ function startTimer(){
     h_timer.textContent = val; g_timer.textContent = val;
     if (nextLeft>0) nextLeft--; else clearInterval(timerInt);
   };
-  tick();
-  timerInt = setInterval(tick,1000);
+  tick(); timerInt = setInterval(tick,1000);
 }
 
-// Update counters everywhere
+// Shared stats setter
 function setStats({ points, balls, nextRefillIn }){
-  h_points.textContent = points;
-  h_balls.textContent  = balls;
-  g_points.textContent = points;
-  g_balls.textContent  = `${balls}/60`;
-  if (typeof nextRefillIn === 'number') { nextLeft = nextRefillIn; startTimer(); }
-  btnDrop.disabled = balls <= 0;
+  if (typeof points === 'number'){
+    h_points.textContent = points; g_points.textContent = points;
+  }
+  if (typeof balls === 'number'){
+    h_balls.textContent = balls; g_balls.textContent = `${balls}/60`;
+    btnDrop.disabled = balls <= 0;
+  }
+  if (typeof nextRefillIn === 'number'){ nextLeft = nextRefillIn; startTimer(); }
 }
 
-// ===================
-// Build triangle grid
-// ===================
-const ROWS = 11;                 // number of rows in triangle (like your sample)
-const DOT = 8;                   // dot size (px)
-const SPACING = 28;              // distance between dots (px)
-const TOP_MARGIN = 30;
+// ---------- Triangle board (centered) ----------
+const ROWS = 11;          // number of rows (apex to base)
+const SPACING = 28;       // px between dots
+const TOP = 26;           // top padding inside board
 
 function buildTriangle(){
   board.innerHTML = "";
-  const width = board.clientWidth;
-  const totalW = (ROWS - 1) * SPACING;
-  const offsetX = (width - totalW) / 2;
-
+  const w = board.clientWidth;
   for (let r = 0; r < ROWS; r++){
-    const cols = r + 1;                           // triangle grows by 1 each row
-    const startX = offsetX + (totalW - (r*SPACING)) / 2; // center
+    const cols = r + 1;
+    const totalWidth = (cols - 1) * SPACING;
+    const startX = (w / 2) - (totalWidth / 2);   // CENTER the row
+    const y = TOP + r * SPACING;
     for (let c = 0; c < cols; c++){
+      const x = startX + c * SPACING;
       const dot = document.createElement('div');
       dot.className = 'dot';
-      const x = startX + c * SPACING;
-      const y = TOP_MARGIN + r * SPACING;
       dot.style.transform = `translate(${x}px, ${y}px)`;
       board.appendChild(dot);
     }
@@ -252,7 +222,7 @@ function buildTriangle(){
 buildTriangle();
 window.addEventListener('resize', buildTriangle);
 
-// Bins (match screenshot numbers & highlight ends)
+// Bins (labels & gradient)
 const BIN_VALUES = [100,75,50,35,20,10,20,35,50,75,100];
 function buildBins(){
   binsWrap.innerHTML = "";
@@ -265,20 +235,15 @@ function buildBins(){
 }
 buildBins();
 
-// ===================
-// Bootstrap
-// ===================
+// ---------- Bootstrap ----------
 (async ()=>{
   const r = await callApi("/api/bootstrap");
-  if (!r.ok) return alert(r.error || "Auth failed.");
+  if (!r.ok) { alert(r.error || "Auth failed."); return; }
   setStats(r);
 })();
 
 // View switching
-function show(view){
-  [viewHome, viewGame].forEach(v=>v.classList.remove('active'));
-  view.classList.add('active');
-}
+function show(view){ [viewHome, viewGame].forEach(v=>v.classList.remove('active')); view.classList.add('active'); }
 btnGoGame.addEventListener('click', ()=>show(viewGame));
 btnBack.addEventListener('click', ()=>show(viewHome));
 
@@ -291,12 +256,11 @@ async function showRecords(){
 btnRec.addEventListener('click', showRecords);
 btnRecHome.addEventListener('click', showRecords);
 
-// ===================
-// Drop animation + API
-// ===================
+// ---------- Drop ----------
 async function drop(){
   btnDrop.disabled = true;
 
+  // Visual ball
   const ball = document.createElement('div');
   ball.className = 'ball'; board.appendChild(ball);
 
@@ -313,10 +277,9 @@ async function drop(){
   // Ask server to resolve prize & counts
   const res = await callApi("/api/drop");
   if (!res.ok){
-    ball.remove();
-    btnDrop.disabled = false;
-    if (res.error === "NO_BALLS"){ alert("Out of balls. Please wait for refill."); }
-    else { alert(res.error || "Drop failed"); }
+    ball.remove(); btnDrop.disabled = false;
+    if (res.error === "NO_BALLS") alert("Out of balls. Please wait for refill.");
+    else alert(res.error || "Drop failed");
     return;
   }
 
